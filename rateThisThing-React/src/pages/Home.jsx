@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import '../css/Home.css';
 import Loading from '../components/Loading';
+import ScrollToTopButton from '../components/ScrollToTopButton';
 
 function Home() {
   const [items, setItems] = useState([]);
@@ -100,15 +101,16 @@ function Home() {
             ))
           )}
         </div>
-        {selectedCategory && (
-          <div className="selected-category">
-            <p>Selected Category: {selectedCategory.name}</p>
-            <button onClick={handleRemoveSelection} className="remove-selection-button">
-              Remove Selection
-            </button>
-          </div>
-        )}
+
       </div>
+      {selectedCategory && (
+        <div className="selected-category">
+          <p>Selected Category: {selectedCategory.name}</p>
+          <button onClick={handleRemoveSelection} className="remove-selection-button">
+            Remove Selection
+          </button>
+        </div>
+      )}
 
       <div className="search-bar-container">
         <input
@@ -145,6 +147,10 @@ function Home() {
           )
         )}
       </div>
+      <div className="home-container">
+            {/* Your existing JSX */}
+            <ScrollToTopButton />
+        </div>
     </div>
   );
 }

@@ -9,7 +9,6 @@ function Item() {
     const { id } = useParams();
     const [item, setItem] = useState(null);
     const [reviews, setReviews] = useState([]);
-    const [ratings, setRatings] = useState([]);
     const [loading, setLoading] = useState(true);
     const [itemError, setItemError] = useState(null);
 
@@ -37,27 +36,12 @@ function Item() {
                     setReviews(data);
                 }
             } catch {
-                // Log error or handle silently, but don't update UI with an error
                 console.error('Failed to fetch item reviews');
-            }
-        };
-
-        const fetchRatings = async () => {
-            try {
-                const response = await fetch(`http://localhost:3001/items/${id}/ratings`);
-                if (response.ok) {
-                    const data = await response.json();
-                    setRatings(data);
-                }
-            } catch {
-                // Log error or handle silently, but don't update UI with an error
-                console.error('Failed to fetch item ratings');
             }
         };
 
         fetchItem();
         fetchReviews();
-        fetchRatings();
     }, [id]);
 
     if (loading) {
@@ -72,20 +56,39 @@ function Item() {
         return <Error message="Item not found" />;
     }
 
-    // Helper function to get the rating for a specific user
     const getUserRating = (userId) => {
-        const rating = ratings.find(r => r.userId === userId);
-        return rating ? rating.rating : 0; // Default to 0 stars if no rating found
+        const rating = reviews.find(r => r.userId === userId);
+        return rating ? rating.rating : 0;
     };
+
+    const averageRating = reviews.length > 0
+        ? Math.round(reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length)
+        : 0;
 
     return (
         <>
             <div className="item-container">
                 <h2 className="item-title">{item.name}</h2>
-                <p className="item-description"><strong>Description:</strong> {item.description}</p>
-                <p className="item-category"><strong>Category:</strong> {item.categoryName}</p>
+                <div className="average-rating">
+                    <p><strong>Rating:</strong></p>
+                    {[...Array(averageRating)].map((_, index) => (
+                        <span key={index} className="stars" style={{ color: 'gold' }}>
+                            &#9733;
+                        </span>
+                    ))}
+                    {[...Array(5 - averageRating)].map((_, index) => (
+                        <span key={index} className="stars" style={{ color: '#ddd' }}>
+                            &#9733;
+                        </span>
+                    ))}
+                </div>
 
-                <h3 className="reviews-title">Reviews</h3>
+                <p className="item-description">Description: {item.description}</p>
+                <p className="item-category">{item.categoryName}</p>
+
+                <h3 className="reviews-title">
+                    {reviews.length} {reviews.length === 1 ? 'Review' : 'Reviews'}
+                </h3>
                 {reviews.length > 0 ? (
                     <div className="reviews-container">
                         {reviews.map((review, index) => (
@@ -97,8 +100,14 @@ function Item() {
                                         </span>
                                     ))}
                                 </div>
+                                <p className="review-date">
+                                    user {review.userId} - {new Intl.DateTimeFormat('en-GB', {
+                                        day: '2-digit',
+                                        month: 'short',
+                                        year: 'numeric'
+                                    }).format(new Date(review.reviewDate))}
+                                </p>
                                 <p className="review-text">{review.reviewText}</p>
-                                <p className="review-date">{new Date(review.reviewDate).toLocaleDateString()}</p>
                             </div>
                         ))}
                     </div>

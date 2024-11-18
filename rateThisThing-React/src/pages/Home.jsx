@@ -1,9 +1,70 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import '../css/Home.css';
 
 function Home() {
-  const [items] = useState([]);
+  const [items, setItems] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState(null);
+
+  useEffect(() => {
+    const fetchItems = async () => {
+      try {
+        const response = await fetch('http://localhost:3001/items');
+        if (!response.ok) {
+          throw new Error('Failed to fetch items');
+        }
+        const data = await response.json();
+        setItems(data);
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    const fetchCategories = async () => {
+      try {
+        const response = await fetch('http://localhost:3001/categories');
+        if (!response.ok) {
+          throw new Error('Failed to fetch categories');
+        }
+        const data = await response.json();
+        setCategories(data);
+      } catch (err) {
+        setError(err.message);
+      }
+    };
+
+    fetchItems();
+    fetchCategories();
+  }, []);
+
+  if (loading) {
+    return <p>Loading items...</p>;
+  }
+
+  if (error) {
+    return <p>Error: {error}</p>;
+  }
+
+  // Filter items based on search query and selected category
+  const filteredItems = items.filter(item => {
+    const matchesSearch = item.name.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesCategory = selectedCategory ? item.categoryName === selectedCategory.name : true;
+    return matchesSearch && matchesCategory;
+  });
+
+  const handleCategoryClick = (category) => {
+    setSelectedCategory(category);
+  };
+
+  const handleRemoveSelection = () => {
+    setSelectedCategory(null);
+  };
 
   return (
     <div className="home-container">
@@ -25,33 +86,55 @@ function Home() {
 
       <div className="categories-container">
         <div className="categories-scroll">
-          <button className="category-button">Restaurants</button>
-          <button className="category-button">Cafes</button>
-          <button className="category-button">Parks</button>
-          <button className="category-button">Hotels</button>
-          <button className="category-button">Shops</button>
-          <button className="category-button">Gyms</button>
-          <button className="category-button">Museums</button>
-          <button className="category-button">Theaters</button>
+          {categories.map((category) => (
+            <button
+              key={category.id}
+              className="category-button"
+              onClick={() => handleCategoryClick(category)}
+            >
+              {category.name}
+            </button>
+          ))}
         </div>
+
       </div>
+      {selectedCategory && (
+        <div className="selected-category">
+          <p>Selected Category: {selectedCategory.name}</p>
+          <button onClick={handleRemoveSelection} className="remove-selection-button">
+            Remove Selection
+          </button>
+        </div>
+      )}
 
       <div className="search-bar-container">
         <input
           type="text"
           placeholder="Search for places..."
           className="search-bar"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)} // Update search query as you type
         />
       </div>
 
       <div className="items-container">
-        {items.map((item) => (
-          <div key={item.id} className="item-card">
-            <h3>{item.name}</h3>
-            <p><strong>Category:</strong> {item.categoryName}</p>
-            <p>{item.description}</p>
-          </div>
-        ))}
+        {filteredItems.length > 0 ? (
+          filteredItems.map((item) => (
+            <div key={item.id} className="item-card">
+              <h3>{item.name}</h3>
+              <div>
+                {[...Array(5)].map((_, index) => (
+                  <span key={index} className="stars" style={{ color: 'gold' }}>
+                    &#9733;
+                  </span>
+                ))}
+              </div>
+              <p>{item.description}</p>
+            </div>
+          ))
+        ) : (
+          <p>No items found for the selected category.</p>
+        )}
       </div>
     </div>
   );

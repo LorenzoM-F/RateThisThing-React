@@ -122,23 +122,47 @@ input[type="checkbox"]:checked~.menu {
 
 .items-container {
     margin-top: 20px;
-  }
-  
-  .item-card {
+}
+
+.item-card {
     border: 1px solid #ddd;
     border-radius: 10px;
     padding: 15px;
     margin-bottom: 15px;
     background-color: #fff;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-  }
-  
-  .item-card h3 {
+}
+
+.item-card h3 {
     margin: 0;
     margin-bottom: 10px;
+}
+
+.item-card p {
+    margin: 5px 0;
+}
+
+.stars {
+    color: gold;
+}
+
+.selected-category {
+    margin-top: 10px;
+    display: flex;
+    align-items: center;
   }
   
-  .item-card p {
-    margin: 5px 0;
+  .remove-selection-button {
+    margin-left: 10px;
+    padding: 5px 10px;
+    border: none;
+    background-color: #d9534f;
+    color: white;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+  
+  .remove-selection-button:hover {
+    background-color: #c9302c;
   }
   

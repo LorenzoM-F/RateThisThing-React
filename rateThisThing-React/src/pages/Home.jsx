@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import '../css/Home.css';
+import Loading from '../components/Loading';
 
 function Home() {
   const [items, setItems] = useState([]);
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [itemsError, setItemsError] = useState(null);
+  const [categoriesError, setCategoriesError] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState(null);
 
@@ -20,9 +22,10 @@ function Home() {
         const data = await response.json();
         setItems(data);
       } catch (err) {
-        setError(err.message);
+        console.error('Error fetching items:', err.message);
+        setItemsError('Failed to load items.');
       } finally {
-        setLoading(false);
+        setLoading(false); // Stop loading after the items fetch attempt
       }
     };
 
@@ -35,7 +38,8 @@ function Home() {
         const data = await response.json();
         setCategories(data);
       } catch (err) {
-        setError(err.message);
+        console.error('Error fetching categories:', err.message);
+        setCategoriesError('Failed to load categories.');
       }
     };
 
@@ -44,13 +48,10 @@ function Home() {
   }, []);
 
   if (loading) {
-    return <p>Loading items...</p>;
+    return <Loading />;
   }
 
-  if (error) {
-    return <p>Error: {error}</p>;
-  }
-
+  // Define filteredItems before using it in JSX
   const filteredItems = items.filter(item => {
     const matchesSearch = item.name.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesCategory = selectedCategory ? item.categoryName === selectedCategory.name : true;
@@ -85,15 +86,19 @@ function Home() {
 
       <div className="categories-container">
         <div className="categories-scroll">
-          {categories.map((category) => (
-            <button
-              key={category.id}
-              className="category-button"
-              onClick={() => handleCategoryClick(category)}
-            >
-              {category.name}
-            </button>
-          ))}
+          {categoriesError ? (
+            <p className="error-text">{categoriesError}</p>
+          ) : (
+            categories.map((category) => (
+              <button
+                key={category.id}
+                className="category-button"
+                onClick={() => handleCategoryClick(category)}
+              >
+                {category.name}
+              </button>
+            ))
+          )}
         </div>
         {selectedCategory && (
           <div className="selected-category">
@@ -116,24 +121,28 @@ function Home() {
       </div>
 
       <div className="items-container">
-        {filteredItems.length > 0 ? (
-          filteredItems.map((item) => (
-            <Link to={`/item/${item.id}`} key={item.id} className="item-card-link">
-              <div className="item-card">
-                <h3>{item.name}</h3>
-                <div>
-                  {[...Array(5)].map((_, index) => (
-                    <span key={index} className="stars" style={{ color: 'gold' }}>
-                      &#9733;
-                    </span>
-                  ))}
-                </div>
-                <p>{item.description}</p>
-              </div>
-            </Link>
-          ))
+        {itemsError ? (
+          <p className="error-text">{itemsError}</p>
         ) : (
-          <p>No items found for the selected category.</p>
+          filteredItems.length > 0 ? (
+            filteredItems.map((item) => (
+              <Link to={`/item/${item.id}`} key={item.id} className="item-card-link">
+                <div className="item-card">
+                  <h3>{item.name}</h3>
+                  <div>
+                    {[...Array(5)].map((_, index) => (
+                      <span key={index} className="stars" style={{ color: 'gold' }}>
+                        &#9733;
+                      </span>
+                    ))}
+                  </div>
+                  <p>{item.description}</p>
+                </div>
+              </Link>
+            ))
+          ) : (
+            <p>No items found for the selected category.</p>
+          )
         )}
       </div>
     </div>

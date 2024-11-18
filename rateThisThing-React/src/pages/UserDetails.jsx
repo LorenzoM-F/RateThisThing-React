@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import Loading from '../components/Loading';
 
 function UserDetails() {
     const [user, setUser] = useState(null);
@@ -12,10 +13,10 @@ function UserDetails() {
             try {
                 // Simulate API call with a timeout
                 const response = await new Promise((resolve) =>
-                    setTimeout(() => resolve({ 
-                        name: 'John Doe', 
-                        email: 'john.doe@example.com', 
-                        username: 'johndoe123' 
+                    setTimeout(() => resolve({
+                        name: 'John Doe',
+                        email: 'john.doe@example.com',
+                        username: 'johndoe123'
                     }), 1000)
                 );
                 setUser(response);
@@ -30,7 +31,7 @@ function UserDetails() {
     }, []);
 
     if (loading) {
-        return <p>Loading user details...</p>;
+        return <Loading />;
     }
 
     if (error) {

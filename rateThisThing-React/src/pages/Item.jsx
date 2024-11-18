@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import '../css/Item.css';
 import Back from '../components/Back';
+import Loading from '../components/Loading';
+import Error from '../components/Error';
 
 function Item() {
     const { id } = useParams();
@@ -9,7 +11,7 @@ function Item() {
     const [reviews, setReviews] = useState([]);
     const [ratings, setRatings] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
+    const [itemError, setItemError] = useState(null);
 
     useEffect(() => {
         const fetchItem = async () => {
@@ -21,7 +23,7 @@ function Item() {
                 const data = await response.json();
                 setItem(data);
             } catch (err) {
-                setError(err.message);
+                setItemError(err.message);
             } finally {
                 setLoading(false);
             }
@@ -30,26 +32,26 @@ function Item() {
         const fetchReviews = async () => {
             try {
                 const response = await fetch(`http://localhost:3001/items/${id}/reviews`);
-                if (!response.ok) {
-                    throw new Error('Failed to fetch item reviews');
+                if (response.ok) {
+                    const data = await response.json();
+                    setReviews(data);
                 }
-                const data = await response.json();
-                setReviews(data);
-            } catch (err) {
-                setError(err.message);
+            } catch {
+                // Log error or handle silently, but don't update UI with an error
+                console.error('Failed to fetch item reviews');
             }
         };
 
         const fetchRatings = async () => {
             try {
                 const response = await fetch(`http://localhost:3001/items/${id}/ratings`);
-                if (!response.ok) {
-                    throw new Error('Failed to fetch item ratings');
+                if (response.ok) {
+                    const data = await response.json();
+                    setRatings(data);
                 }
-                const data = await response.json();
-                setRatings(data);
-            } catch (err) {
-                setError(err.message);
+            } catch {
+                // Log error or handle silently, but don't update UI with an error
+                console.error('Failed to fetch item ratings');
             }
         };
 
@@ -59,15 +61,15 @@ function Item() {
     }, [id]);
 
     if (loading) {
-        return <p className="loading-text">Loading item details...</p>;
+        return <Loading />;
     }
 
-    if (error) {
-        return <p className="error-text">Error: {error}</p>;
+    if (itemError) {
+        return <Error message={itemError} />;
     }
 
     if (!item) {
-        return <p className="not-found-text">Item not found</p>;
+        return <Error message="Item not found" />;
     }
 
     // Helper function to get the rating for a specific user

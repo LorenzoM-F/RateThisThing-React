@@ -51,7 +51,6 @@ function Home() {
     return <p>Error: {error}</p>;
   }
 
-  // Filter items based on search query and selected category
   const filteredItems = items.filter(item => {
     const matchesSearch = item.name.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesCategory = selectedCategory ? item.categoryName === selectedCategory.name : true;
@@ -96,16 +95,15 @@ function Home() {
             </button>
           ))}
         </div>
-
+        {selectedCategory && (
+          <div className="selected-category">
+            <p>Selected Category: {selectedCategory.name}</p>
+            <button onClick={handleRemoveSelection} className="remove-selection-button">
+              Remove Selection
+            </button>
+          </div>
+        )}
       </div>
-      {selectedCategory && (
-        <div className="selected-category">
-          <p>Selected Category: {selectedCategory.name}</p>
-          <button onClick={handleRemoveSelection} className="remove-selection-button">
-            Remove Selection
-          </button>
-        </div>
-      )}
 
       <div className="search-bar-container">
         <input
@@ -113,24 +111,26 @@ function Home() {
           placeholder="Search for places..."
           className="search-bar"
           value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)} // Update search query as you type
+          onChange={(e) => setSearchQuery(e.target.value)}
         />
       </div>
 
       <div className="items-container">
         {filteredItems.length > 0 ? (
           filteredItems.map((item) => (
-            <div key={item.id} className="item-card">
-              <h3>{item.name}</h3>
-              <div>
-                {[...Array(5)].map((_, index) => (
-                  <span key={index} className="stars" style={{ color: 'gold' }}>
-                    &#9733;
-                  </span>
-                ))}
+            <Link to={`/item/${item.id}`} key={item.id} className="item-card-link">
+              <div className="item-card">
+                <h3>{item.name}</h3>
+                <div>
+                  {[...Array(5)].map((_, index) => (
+                    <span key={index} className="stars" style={{ color: 'gold' }}>
+                      &#9733;
+                    </span>
+                  ))}
+                </div>
+                <p>{item.description}</p>
               </div>
-              <p>{item.description}</p>
-            </div>
+            </Link>
           ))
         ) : (
           <p>No items found for the selected category.</p>
